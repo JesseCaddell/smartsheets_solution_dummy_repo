@@ -1,4 +1,4 @@
-name: send-issue-smartsheet
+name: send-issue-smartsheet test
 run-name: ${{ github.actor }} created an issue
 on:
   issues:
@@ -17,17 +17,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Fetch Data and Write to Smartsheet
-        run: python post-issue-smartsheet.py
-        env:
-          SMART_ACCESS_TOKEN: ${{ secrets.SMARTSHEET_ACCESS_TOKEN }}
-          GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-          ISSUE_NUM: ${{ github.event.issue.number }}
-
-      - name: Checkout # checks out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python # sets up python for runner to prepare for script
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
@@ -39,6 +29,9 @@ jobs:
           pip install smartsheet-python-sdk
           pip install python-dotenv
 
-      - name: Fetch Data and Write to Sheet # runs script that makes API call and writes to a Smartsheet
-        run: |
-          python post-issue-smartsheet.py
+      - name: Fetch Data and Write to Smartsheet
+        run: python post-issue-smartsheet.py
+        env:
+          SMART_ACCESS_TOKEN: ${{ secrets.SMARTSHEET_ACCESS_TOKEN }}
+          GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          ISSUE_NUM: ${{ github.event.issue.number }}
