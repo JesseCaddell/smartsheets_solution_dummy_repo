@@ -18,7 +18,7 @@ logging.basicConfig(filename='rwsheet.log', level=logging.INFO)
 while True:  # Retry until a valid issue is found
     # Fetch issue or PR details
     response = requests.get(
-        f'https://api.github.com/repos/SeattleColleges/shift-app-expo/issues/{ISSUE_NUM}',
+        f'https://api.github.com/repos/JesseCaddell/smartsheets_solution_dummy_repo/issues/{ISSUE_NUM}',
         headers={
             'Authorization': f'Bearer {GITHUB_ACCESS_TOKEN}',
             'Content-Type': 'application/vnd.github+json',
