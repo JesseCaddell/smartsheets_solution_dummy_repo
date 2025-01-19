@@ -35,7 +35,9 @@ while retry_count < MAX_RETRIES:
 
     if response.status_code != 200:
         print(f"Error fetching issue #{current_issue_num}: {response.json()}")
-        exit(1)  # Exit if the API fails
+        retry_count += 1
+        current_issue_num += 1  # Increment and retry
+        continue
 
     data = response.json()
 
@@ -48,7 +50,13 @@ while retry_count < MAX_RETRIES:
         continue
 
     # Process the valid issue
-    assignee = data.get('assignee', {}).get('login', 'Missing assignee')
+    print(f"Processing valid issue #{current_issue_num}")
+    assignee_data = data.get('assignee')
+    if assignee_data is not None:
+        assignee = assignee_data.get('login', 'Missing assignee')
+    else:
+        assignee = 'Missing assignee'
+
     title = data.get('title', 'No Title')
     repo_url = data.get('repository_url', 'No Repo URL')
     index = data.get('number', 'No Index')
@@ -65,24 +73,39 @@ while retry_count < MAX_RETRIES:
             },
             'cells': [
                 {
-                'columnId': 5558737690382212,
-                'displayValue': 'title',
-                'value': title
+                    'columnId': 5558737690382212,
+                    'displayValue': 'title',
+                    'value': title
                 },
                 {
-                'columnId': 3306937876696964,
-                'displayValue': 'repo url',
-                'value': repo_url[45:]
+                    'columnId': 3306937876696964,
+                    'displayValue': 'repo url',
+                    'value': repo_url[45:]
                 },
                 {
-                'columnId': 7810537504067460,
-                'displayValue': 'assignee',
-                'value': assignee
+                    'columnId': 7810537504067460,
+                    'displayValue': 'assignee',
+                    'value': assignee
                 },
                 {
-                'columnId': 2181037969854340,
-                'displayValue': 'index',
-                'value': index
+                    'columnId': 2181037969854340,
+                    'displayValue': 'index',
+                    'value': index
                 }
             ]
-            })
+        }
+    )
+
+    if smartsheet_response.status_code == 200:
+        print(f"Issue #{current_issue_num} successfully sent to Smartsheet.")
+        break  # Exit the loop once a valid issue is processed
+    else:
+        print(f"Failed to send issue #{current_issue_num} to Smartsheet: {smartsheet_response.json()}")
+        exit(1)
+
+    # Increment for the next loop in case the loop doesn't exit
+    current_issue_num += 1
+    retry_count += 1
+
+print("Reached the maximum retry limit without finding a valid issue.")
+exit(1)
