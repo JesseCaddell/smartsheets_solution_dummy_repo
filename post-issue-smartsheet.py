@@ -35,7 +35,7 @@ while True:  # Retry until a valid issue is found
     # Check if the item is a PR
     if 'pull_request' in data:
         print(f"Skipping PR #{ISSUE_NUM}. Incrementing to the next number...")
-        ISSUE_NUM += 1  # Increment and retry
+        ISSUE_NUM = str(int(ISSUE_NUM) + 1)  # Increment and retry
         continue
 
     # Process the valid issue
@@ -44,6 +44,7 @@ while True:  # Retry until a valid issue is found
         assignee = assignee_data.get('login', 'Missing assignee')
     else:
         assignee = 'Missing assignee'
+
     title = data.get('title', 'No Title')
     repo_url = data.get('repository_url', 'No Repo URL')
     index = data.get('number', 'No Index')
