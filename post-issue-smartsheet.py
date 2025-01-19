@@ -6,7 +6,8 @@ import os
 SMART_ACCESS_TOKEN = os.environ['SMART_ACCESS_TOKEN']
 GITHUB_ACCESS_TOKEN = os.environ['GH_ACCESS_TOKEN']
 # Start with the initial ISSUE_NUM from the environment
-current_issue_num = int(os.environ['ISSUE_NUM'])  # Convert to integer
+original_issue_num = int(os.environ['ISSUE_NUM'])  # Convert to integer
+current_issue_num = original_issue_num  # Track current number for processing
 
 # Initialize Smartsheet client
 smart = smartsheet.Smartsheet(SMART_ACCESS_TOKEN)
@@ -81,6 +82,12 @@ while True:  # Loop until a valid issue is successfully processed
 
     if smartsheet_response.status_code == 200:
         print(f"Issue #{current_issue_num} successfully sent to Smartsheet.")
+
+        # Update the GitHub Actions environment variable
+        with open(os.environ['GITHUB_ENV'], 'a') as github_env:
+            github_env.write(f"ISSUE_NUM={current_issue_num}\n")
+
+        print(f"Updated ISSUE_NUM to {current_issue_num} in GitHub Actions environment.")
         exit(0)  # Gracefully exit after successful processing
     else:
         print(f"Failed to send issue #{current_issue_num} to Smartsheet: {smartsheet_response.json()}")
