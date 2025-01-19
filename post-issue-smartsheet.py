@@ -2,10 +2,11 @@ import requests
 import smartsheet
 import logging
 import os
+import time
 
 SMART_ACCESS_TOKEN = os.environ['SMART_ACCESS_TOKEN']
 GITHUB_ACCESS_TOKEN = os.environ['GH_ACCESS_TOKEN']
-ISSUE_NUM = os.environ['ISSUE_NUM'] 
+current_issue_num = int(os.environ['ISSUE_NUM'])
 
 # Initialize client. Uses the API token in the environment variable 'SMARTSHEET_ACCESS_TOKEN'
 smart = smartsheet.Smartsheet(SMART_ACCESS_TOKEN)
@@ -15,7 +16,13 @@ smart.errors_as_exceptions(True)
 # Log all calls
 logging.basicConfig(filename='rwsheet.log', level=logging.INFO)
 
-while True:  # Retry until a valid issue is found
+# Retry settings
+MAX_RETRIES = 10  # Limit the number of attempts to prevent infinite loops
+retry_count = 0
+
+while retry_count < MAX_RETRIES:
+    print(f"Attempting to process ISSUE_NUM: {current_issue_num}")
+
     # Fetch issue or PR details
     response = requests.get(
         f'https://api.github.com/repos/JesseCaddell/smartsheets_solution_dummy_repo/issues/{ISSUE_NUM}',
@@ -27,15 +34,17 @@ while True:  # Retry until a valid issue is found
     )
 
     if response.status_code != 200:
-        print(f"Error fetching issue #{ISSUE_NUM}: {response.json()}")
+        print(f"Error fetching issue #{current_issue_num}: {response.json()}")
         exit(1)  # Stop if the API fails
 
     data = response.json()
 
     # Check if the item is a PR
     if 'pull_request' in data:
-        print(f"Skipping PR #{ISSUE_NUM}. Incrementing to the next number...")
-        ISSUE_NUM = str(int(ISSUE_NUM) + 1)  # Increment and retry
+        print(f"Skipping PR #{current_issue_num}. Incrementing to the next number...")
+        current_issue_num += 1  # Increment the local counter
+        retry_count += 1
+        time.sleep(1)  # Add a short delay to avoid rapid API calls
         continue
 
     # Process the valid issue
