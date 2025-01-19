@@ -5,9 +5,8 @@ import os
 
 SMART_ACCESS_TOKEN = os.environ['SMART_ACCESS_TOKEN']
 GITHUB_ACCESS_TOKEN = os.environ['GH_ACCESS_TOKEN']
-# Start with the initial ISSUE_NUM from the environment
-original_issue_num = int(os.environ['ISSUE_NUM'])  # Convert to integer
-current_issue_num = original_issue_num  # Track current number for processing
+current_issue_num = int(os.environ['ISSUE_NUM'])  # Start from the last processed issue
+triggered_issue_num = int(os.environ['CURRENT_ISSUE_NUM'])  # Current issue number from event
 
 # Initialize Smartsheet client
 smart = smartsheet.Smartsheet(SMART_ACCESS_TOKEN)
@@ -16,7 +15,7 @@ smart.errors_as_exceptions(True)
 # Log all API calls
 logging.basicConfig(filename='rwsheet.log', level=logging.INFO)
 
-while True:  # Loop until a valid issue is successfully processed
+while current_issue_num <= triggered_issue_num:
     print(f"Attempting to process ISSUE_NUM: {current_issue_num}")
 
     # Fetch issue or PR details
@@ -31,14 +30,15 @@ while True:  # Loop until a valid issue is successfully processed
 
     if response.status_code != 200:
         print(f"Error fetching issue #{current_issue_num}: {response.json()}")
-        exit(1)  # Exit if the API fails
+        current_issue_num += 1  # Skip to next
+        continue
 
     data = response.json()
 
     # Check if the item is a PR
     if 'pull_request' in data:
         print(f"Skipping PR #{current_issue_num}. Incrementing to the next number...")
-        current_issue_num += 1  # Increment the local counter to skip PR
+        current_issue_num += 1
         continue
 
     # Process the valid issue
@@ -82,13 +82,13 @@ while True:  # Loop until a valid issue is successfully processed
 
     if smartsheet_response.status_code == 200:
         print(f"Issue #{current_issue_num} successfully sent to Smartsheet.")
-
-        # Update the GitHub Actions environment variable
-        with open(os.environ['GITHUB_ENV'], 'a') as github_env:
-            github_env.write(f"ISSUE_NUM={current_issue_num}\n")
-
-        print(f"Updated ISSUE_NUM to {current_issue_num} in GitHub Actions environment.")
-        exit(0)  # Gracefully exit after successful processing
     else:
         print(f"Failed to send issue #{current_issue_num} to Smartsheet: {smartsheet_response.json()}")
-        exit(1)
+
+    current_issue_num += 1  # Move to the next issue
+
+# Update the GitHub Actions environment variable
+with open(os.environ['GITHUB_ENV'], 'a') as github_env:
+    github_env.write(f"ISSUE_NUM={triggered_issue_num}\n")
+
+print(f"Updated ISSUE_NUM to {triggered_issue_num} in GitHub Actions environment.")
