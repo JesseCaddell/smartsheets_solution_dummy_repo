@@ -43,7 +43,7 @@ jobs:
       - name: Update ISSUE_NUM Variable in Repository # Updates ISSUE_NUM at the repository level
         run: |
           curl -X PATCH \
-          -H "Authorization: Bearer ${{ secrets.GITHUB_ACCESS_TOKEN }}" \
+          -H "Authorization: Bearer ${{ secrets.GH_ACCESS_TOKEN }}" \
           -H "Accept: application/vnd.github+json" \
           -H "Content-Type: application/json" \
           -d '{"name": "ISSUE_NUM", "value": "'"${{ github.event.issue.number }}"'"}' \
