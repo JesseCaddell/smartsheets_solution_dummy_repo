@@ -5,8 +5,9 @@ on:
     types: [opened]  # Trigger only when an issue is opened
 
 permissions:
-  # Grant write permission to actions (sometimes 'administration: write' is needed)
-  actions: write
+  # Grant write permission to actions
+    actions: write
+    administration: write
 
 env:
   SMART_ACCESS_TOKEN: ${{ secrets.SMARTSHEET_ACCESS_TOKEN }}
