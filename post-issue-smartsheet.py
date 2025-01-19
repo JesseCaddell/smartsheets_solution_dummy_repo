@@ -39,7 +39,11 @@ while True:  # Retry until a valid issue is found
         continue
 
     # Process the valid issue
-    assignee = data.get('assignee', {}).get('login', 'Missing assignee')
+    assignee_data = data.get('assignee')
+    if assignee_data is not None:
+        assignee = assignee_data.get('login', 'Missing assignee')
+    else:
+        assignee = 'Missing assignee'
     title = data.get('title', 'No Title')
     repo_url = data.get('repository_url', 'No Repo URL')
     index = data.get('number', 'No Index')
