@@ -44,36 +44,36 @@ while True:  # Retry until a valid issue is found
     repo_url = data.get('repository_url', 'No Repo URL')
     index = data.get('number', 'No Index')
 
-# POST request to Smartsheet API
-smartsheet_response = requests.post(
-    'https://api.smartsheet.com/2.0/sheets/5425857896075140/rows',
-    headers={'Authorization': f'Bearer {SMART_ACCESS_TOKEN}', 'Content-Type': 'application/json'},
-    json={
-        'sheetId': 5425857896075140,
-        'accessLevel': 'OWNER',
-        'createdBy': {
-            'name': 'automation'
-        },
-        'cells': [
-            {
-            'columnId': 2188750605209476,
-            'displayValue': 'title',
-            'value': title
+    # POST request to Smartsheet API
+    smartsheet_response = requests.post(
+        'https://api.smartsheet.com/2.0/sheets/5425857896075140/rows',
+        headers={'Authorization': f'Bearer {SMART_ACCESS_TOKEN}', 'Content-Type': 'application/json'},
+        json={
+            'sheetId': 2342839996338052,
+            'accessLevel': 'OWNER',
+            'createdBy': {
+                'name': 'automation'
             },
-            {
-            'columnId': 6692350232579972,
-            'displayValue': 'repo url',
-            'value': repo_url[45:]
-            },
-            {
-            'columnId': 8944150046265220,
-            'displayValue': 'assignee',
-            'value': assignee
-            },
-            {
-            'columnId': 42503907790724,
-            'displayValue': 'index',
-            'value': index
-            }
-        ]
-        })
+            'cells': [
+                {
+                'columnId': 5558737690382212,
+                'displayValue': 'title',
+                'value': title
+                },
+                {
+                'columnId': 3306937876696964,
+                'displayValue': 'repo url',
+                'value': repo_url[45:]
+                },
+                {
+                'columnId': 7810537504067460,
+                'displayValue': 'assignee',
+                'value': assignee
+                },
+                {
+                'columnId': 2181037969854340,
+                'displayValue': 'index',
+                'value': index
+                }
+            ]
+            })
