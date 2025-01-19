@@ -7,19 +7,22 @@ on:
 env:
   SMART_ACCESS_TOKEN: ${{ secrets.SMARTSHEET_ACCESS_TOKEN }}
   GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-  ISSUE_NUM: ${{ vars.ISSUE_NUM }}
+  ISSUE_NUM: ${{ github.event.issue.number }}  # Automatically capture the current issue number
 
 jobs:
   fetch-and-store:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Increment
-        id: increment_issue_num
-        uses: action-pack/increment@v2
-        with:
-          name: 'ISSUE_NUM'
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Fetch Data and Write to Smartsheet
+        run: python post-issue-smartsheet.py
+        env:
+          SMART_ACCESS_TOKEN: ${{ secrets.SMARTSHEET_ACCESS_TOKEN }}
+          GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          ISSUE_NUM: ${{ github.event.issue.number }}
 
       - name: Checkout # checks out repository
         uses: actions/checkout@v4
