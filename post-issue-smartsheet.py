@@ -2,7 +2,6 @@ import requests
 import smartsheet
 import logging
 import os
-import time
 
 SMART_ACCESS_TOKEN = os.environ['SMART_ACCESS_TOKEN']
 GITHUB_ACCESS_TOKEN = os.environ['GH_ACCESS_TOKEN']
@@ -16,11 +15,7 @@ smart.errors_as_exceptions(True)
 # Log all API calls
 logging.basicConfig(filename='rwsheet.log', level=logging.INFO)
 
-# Retry settings
-MAX_RETRIES = 10  # Limit the number of attempts to prevent infinite loops
-retry_count = 0
-
-while retry_count < MAX_RETRIES:
+while True:  # Loop until a valid issue is successfully processed
     print(f"Attempting to process ISSUE_NUM: {current_issue_num}")
 
     # Fetch issue or PR details
@@ -35,18 +30,14 @@ while retry_count < MAX_RETRIES:
 
     if response.status_code != 200:
         print(f"Error fetching issue #{current_issue_num}: {response.json()}")
-        retry_count += 1
-        current_issue_num += 1  # Increment and retry
-        continue
+        exit(1)  # Exit if the API fails
 
     data = response.json()
 
     # Check if the item is a PR
     if 'pull_request' in data:
         print(f"Skipping PR #{current_issue_num}. Incrementing to the next number...")
-        current_issue_num += 1  # Increment the local counter
-        retry_count += 1
-        time.sleep(1)  # Add a short delay to avoid rapid API calls
+        current_issue_num += 1  # Increment the local counter to skip PR
         continue
 
     # Process the valid issue
@@ -66,30 +57,22 @@ while retry_count < MAX_RETRIES:
         'https://api.smartsheet.com/2.0/sheets/2342839996338052/rows',
         headers={'Authorization': f'Bearer {SMART_ACCESS_TOKEN}', 'Content-Type': 'application/json'},
         json={
-            'sheetId': 2342839996338052,
-            'accessLevel': 'OWNER',
-            'createdBy': {
-                'name': 'automation'
-            },
+            'toTop': True,
             'cells': [
                 {
-                    'columnId': 5558737690382212,
-                    'displayValue': 'title',
+                    'columnId': 5558737690382212,  # "Primary Column"
                     'value': title
                 },
                 {
-                    'columnId': 3306937876696964,
-                    'displayValue': 'repo url',
+                    'columnId': 3306937876696964,  # "Column2"
                     'value': repo_url[45:]
                 },
                 {
-                    'columnId': 7810537504067460,
-                    'displayValue': 'assignee',
+                    'columnId': 7810537504067460,  # "Column3"
                     'value': assignee
                 },
                 {
-                    'columnId': 2181037969854340,
-                    'displayValue': 'index',
+                    'columnId': 2181037969854340,  # "Column4"
                     'value': index
                 }
             ]
@@ -98,14 +81,7 @@ while retry_count < MAX_RETRIES:
 
     if smartsheet_response.status_code == 200:
         print(f"Issue #{current_issue_num} successfully sent to Smartsheet.")
-        break  # Exit the loop once a valid issue is processed
+        exit(0)  # Gracefully exit after successful processing
     else:
         print(f"Failed to send issue #{current_issue_num} to Smartsheet: {smartsheet_response.json()}")
         exit(1)
-
-    # Increment for the next loop in case the loop doesn't exit
-    current_issue_num += 1
-    retry_count += 1
-
-print("Reached the maximum retry limit without finding a valid issue.")
-exit(1)
