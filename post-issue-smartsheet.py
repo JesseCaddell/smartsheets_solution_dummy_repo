@@ -6,14 +6,14 @@ import time
 
 SMART_ACCESS_TOKEN = os.environ['SMART_ACCESS_TOKEN']
 GITHUB_ACCESS_TOKEN = os.environ['GH_ACCESS_TOKEN']
-current_issue_num = int(os.environ['ISSUE_NUM'])
+# Start with the initial ISSUE_NUM from the environment
+current_issue_num = int(os.environ['ISSUE_NUM'])  # Convert to integer
 
-# Initialize client. Uses the API token in the environment variable 'SMARTSHEET_ACCESS_TOKEN'
+# Initialize Smartsheet client
 smart = smartsheet.Smartsheet(SMART_ACCESS_TOKEN)
-# Make sure we don't miss any error
 smart.errors_as_exceptions(True)
 
-# Log all calls
+# Log all API calls
 logging.basicConfig(filename='rwsheet.log', level=logging.INFO)
 
 # Retry settings
@@ -25,7 +25,7 @@ while retry_count < MAX_RETRIES:
 
     # Fetch issue or PR details
     response = requests.get(
-        f'https://api.github.com/repos/JesseCaddell/smartsheets_solution_dummy_repo/issues/{ISSUE_NUM}',
+        f'https://api.github.com/repos/JesseCaddell/smartsheets_solution_dummy_repo/issues/{current_issue_num}',
         headers={
             'Authorization': f'Bearer {GITHUB_ACCESS_TOKEN}',
             'Content-Type': 'application/vnd.github+json',
@@ -35,7 +35,7 @@ while retry_count < MAX_RETRIES:
 
     if response.status_code != 200:
         print(f"Error fetching issue #{current_issue_num}: {response.json()}")
-        exit(1)  # Stop if the API fails
+        exit(1)  # Exit if the API fails
 
     data = response.json()
 
@@ -48,12 +48,7 @@ while retry_count < MAX_RETRIES:
         continue
 
     # Process the valid issue
-    assignee_data = data.get('assignee')
-    if assignee_data is not None:
-        assignee = assignee_data.get('login', 'Missing assignee')
-    else:
-        assignee = 'Missing assignee'
-
+    assignee = data.get('assignee', {}).get('login', 'Missing assignee')
     title = data.get('title', 'No Title')
     repo_url = data.get('repository_url', 'No Repo URL')
     index = data.get('number', 'No Index')
