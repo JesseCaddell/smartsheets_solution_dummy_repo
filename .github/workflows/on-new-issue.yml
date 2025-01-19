@@ -4,6 +4,10 @@ on:
   issues:
     types: [opened]  # Trigger only when an issue is opened
 
+permissions:
+  # Grant write permission to actions (sometimes 'administration: write' is needed)
+  actions: write
+
 env:
   SMART_ACCESS_TOKEN: ${{ secrets.SMARTSHEET_ACCESS_TOKEN }}
   GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
@@ -40,6 +44,7 @@ jobs:
         run: |
           curl -X PATCH \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github+json" \
           -H "Content-Type: application/json" \
           -d '{"name": "ISSUE_NUM", "value": "'"${{ github.event.issue.number }}"'"}' \
           https://api.github.com/repos/${{ github.repository }}/actions/variables/ISSUE_NUM
